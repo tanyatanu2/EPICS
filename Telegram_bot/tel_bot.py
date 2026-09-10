@@ -1,12 +1,82 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    filters,
+    ContextTypes
+)
 
-TOKEN = "8659972313:AAETV315Stlef7VN5PFxs5Xi-pxzhOYttQo"
+from config import TELEGRAM_TOKEN
+from ai_model import get_ai_response
 
+# Store user modes (simple memory)
+user_mode = {}
+
+
+# Start command → ask mode
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! I am your bot ")
+    keyboard = [["Chat", "Photo", "Voice"]]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
+    await update.message.reply_text(
+        "Select mode:",
+        reply_markup=reply_markup
+    )
 
-app.run_polling()
+
+# Handle mode selection
+async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    mode = update.message.text.lower()
+    user_id = update.message.from_user.id
+
+    if mode in ["chat", "photo", "voice"]:
+        user_mode[user_id] = mode
+        await update.message.reply_text(f"{mode.capitalize()} mode activated.\nPlease provide the symptoms.")
+    else:
+        await update.message.reply_text("Please select a valid mode.")
+
+
+# Handle user messages
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    mode = user_mode.get(user_id, "chat")  # default chat
+
+    # CHAT MODE
+    if mode == "chat":
+        user_text = update.message.text
+        ai_reply = get_ai_response(user_text)
+        await update.message.reply_text(ai_reply)
+
+    # PHOTO MODE (placeholder)
+    elif mode == "photo":
+        await update.message.reply_text("Image feature not implemented yet.")
+
+    # VOICE MODE (placeholder)
+    elif mode == "voice":
+        await update.message.reply_text("Voice feature not implemented yet.")
+
+
+def main():
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+
+    # Mode selection handler
+    app.add_handler(MessageHandler(
+        filters.TEXT & filters.Regex("^(Chat|Photo|Voice)$"),
+        set_mode
+    ))
+
+    # Normal messages
+    app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        handle_message
+    ))
+
+    print("Bot running...")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
