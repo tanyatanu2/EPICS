@@ -10,11 +10,9 @@ from telegram.ext import (
 from config import TELEGRAM_TOKEN
 from ai_model import get_ai_response
 
-# Store user modes (simple memory)
 user_mode = {}
 
 
-# Start command → ask mode
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [["Chat", "Photo", "Voice"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -25,7 +23,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# Handle mode selection
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mode = update.message.text.lower()
     user_id = update.message.from_user.id
@@ -37,22 +34,19 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Please select a valid mode.")
 
 
-# Handle user messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     mode = user_mode.get(user_id, "chat")  # default chat
 
-    # CHAT MODE
+
     if mode == "chat":
         user_text = update.message.text
         ai_reply = get_ai_response(user_text)
         await update.message.reply_text(ai_reply)
 
-    # PHOTO MODE (placeholder)
     elif mode == "photo":
         await update.message.reply_text("Image feature not implemented yet.")
 
-    # VOICE MODE (placeholder)
     elif mode == "voice":
         await update.message.reply_text("Voice feature not implemented yet.")
 
@@ -62,13 +56,12 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
 
-    # Mode selection handler
     app.add_handler(MessageHandler(
         filters.TEXT & filters.Regex("^(Chat|Photo|Voice)$"),
         set_mode
     ))
 
-    # Normal messages
+
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         handle_message
