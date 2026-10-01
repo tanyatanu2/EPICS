@@ -1,8 +1,6 @@
+-r Telegram_bot/requirements.txt
 deepgram-sdk
-groq
 numpy
 opencv-python
-Pillow
-requests
 torch
 transformers

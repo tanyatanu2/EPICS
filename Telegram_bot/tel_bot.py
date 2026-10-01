@@ -14,17 +14,14 @@ from telegram.ext import (
     ContextTypes
 )
 
-try:
-    from .ai_model import get_ai_response
-    from .config import GROQ_API_KEY, TELEGRAM_TOKEN, validate_config
-except ImportError:  # Allows: python tel_bot.py
-    from ai_model import get_ai_response
-    from config import GROQ_API_KEY, TELEGRAM_TOKEN, validate_config
+if __package__ in (None, ""):
+    project_root = Path(__file__).resolve().parents[1]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
-# Resolve the sibling ImageProcessing package regardless of the launch directory.
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+from Telegram_bot.ai_model import get_ai_response
+from Telegram_bot.config import GROQ_API_KEY, TELEGRAM_TOKEN, validate_config
+
 from ImageProcessing.imageprocessing import analyze_image
 
 user_mode = {}
