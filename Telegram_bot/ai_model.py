@@ -1,8 +1,11 @@
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+try:
+    from .config import OLLAMA_MODEL, OLLAMA_URL
+except ImportError:  # Allows: python tel_bot.py
+    from config import OLLAMA_MODEL, OLLAMA_URL
 
-def get_ai_response(user_message):
+def get_ai_response(user_message: str) -> str:
     prompt = f"""
 You are a trained rural health assistant.
 
@@ -36,15 +39,26 @@ User symptoms:
 """
 
     payload = {
-        "model": "llama3.2",
+        "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False
     }
 
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=3600)
+        response = requests.post(OLLAMA_URL, json=payload, timeout=120)
+        response.raise_for_status()
         data = response.json()
-        return data.get("response", "No response from model.")
+        answer = data.get("response")
+        if not isinstance(answer, str) or not answer.strip():
+            return "The local AI model returned an empty response. Please try again."
+        return answer.strip()
 
-    except Exception as e:
-        return f"Error: {str(e)}"
+    except requests.exceptions.ConnectionError:
+        return (
+            "I cannot reach Ollama on this computer. Start Ollama and make sure "
+            f"the {OLLAMA_MODEL} model is installed, then try again."
+        )
+    except requests.exceptions.Timeout:
+        return "The local AI model took too long to answer. Please try again."
+    except requests.exceptions.RequestException:
+        return "The local AI model could not complete the request. Please try again."
