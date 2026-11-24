@@ -16,7 +16,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 load_dotenv(Path(__file__).with_name(".env"), override=False)
 
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "").strip()
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "9173754940:AAEsmtNxmXPof1QTiMImX-cYc8ffM7af8BA").strip()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/generate").strip()
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2").strip()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
