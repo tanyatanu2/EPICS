@@ -2,7 +2,7 @@ import requests
 
 try:
     from .config import OLLAMA_MODEL, OLLAMA_URL
-except ImportError:  # Allows: python tel_bot.py
+except ImportError:
     from config import OLLAMA_MODEL, OLLAMA_URL
 
 def get_ai_response(user_message: str) -> str:
